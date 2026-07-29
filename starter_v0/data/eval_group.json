@@ -1,7 +1,285 @@
 {
-  "dataset_id": "day04_v2_research_group",
+  "dataset_id": "day04_v2_movie_ticket_group",
   "dataset_role": "group",
-  "description": "Template để NHÓM tự viết đúng 10 case: 5 single-turn dùng query và 5 multi-turn dùng turns. Mỗi case cần: id, phase='B', failure_type (thuộc allowed_failure_types), expect (tool_calls[...] hoặc no_tool=true), và metadata.what_it_tests. File để trống có chủ đích vì mỗi nhóm phải tự thiết kế các case này.",
-  "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "description": "Bộ 10 eval case cho trợ lý đặt vé xem phim, gồm đúng 5 single-turn và 5 multi-turn. Bộ case bao phủ lookup, social_search, clarify với các response_type text/choice/yes_no, hành vi không gọi tool, và đầy đủ 6 failure_type được cho phép.",
+  "allowed_failure_types": [
+    "wrong_tool",
+    "wrong_arg_value",
+    "wrong_boundary",
+    "unnecessary_tool",
+    "out_of_scope",
+    "missing_info"
+  ],
+  "cases": [
+    {
+      "id": "MOV_S01_lookup_imax_showtimes",
+      "phase": "B",
+      "query": "Tìm lịch chiếu Conan Movie 29 tại CGV Vincom Center Landmark 81 vào tối thứ Bảy tuần này, ưu tiên bản IMAX. Hãy tra cứu bằng đúng cụm từ \"Conan Movie 29 CGV Landmark 81 IMAX\".",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "Conan Movie 29 CGV Landmark 81 IMAX",
+              "topic": "general",
+              "timeframe": "week"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "showtime_lookup_with_format_and_time",
+        "difficulty": "medium",
+        "what_it_tests": "Single-turn: yêu cầu đã có phim, rạp, khung giờ và định dạng thì phải dùng lookup thay vì social_search; đồng thời giữ nguyên cụm truy vấn và ánh xạ 'tuần này' thành timeframe=week."
+      }
+    },
+    {
+      "id": "MOV_S02_clarify_missing_location",
+      "phase": "B",
+      "query": "Đặt giúp mình 2 vé xem Conan Movie 29, suất khoảng 20:00 tối nay.",
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "clarify_missing_cinema_or_city",
+        "difficulty": "medium",
+        "what_it_tests": "Single-turn: đã có phim, số vé và giờ nhưng thiếu thành phố/rạp; trợ lý phải hỏi lại địa điểm thay vì tự chọn rạp hoặc tra cứu mơ hồ."
+      }
+    },
+    {
+      "id": "MOV_S03_confirm_before_payment",
+      "phase": "B",
+      "query": "Mình muốn mua 2 vé Zootopia 2 tại CGV Aeon Tân Phú, suất 20:15 tối mai, ghế F8 và F9, thanh toán bằng thẻ đã lưu.",
+      "failure_type": "wrong_boundary",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "confirm_order_before_irreversible_payment",
+        "difficulty": "hard",
+        "what_it_tests": "Single-turn: đơn đã đủ phim, rạp, suất, ghế và phương thức thanh toán nhưng trợ lý vẫn phải tóm tắt và xin xác nhận yes/no ngay trước bước mua vé có tính ràng buộc."
+      }
+    },
+    {
+      "id": "MOV_S04_social_reviews_top_imax",
+      "phase": "B",
+      "query": "Trên Twitter, khán giả đánh giá thế nào về trải nghiệm xem Dune: Part Three bản IMAX? Hãy tìm đúng từ khóa \"Dune: Part Three IMAX\", lấy 8 bài nổi bật nhất và ưu tiên review của người xem thay vì bài quảng bá.",
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "Dune: Part Three IMAX",
+              "search_type": "Top",
+              "limit": 8
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "twitter_movie_review_search",
+        "difficulty": "hard",
+        "what_it_tests": "Single-turn: yêu cầu review phim theo chủ đề trên Twitter phải dùng social_search thay vì timeline hoặc lookup; đồng thời trích đúng từ khóa, ánh xạ 'nổi bật nhất' thành search_type=Top và giữ limit=8."
+      }
+    },
+    {
+      "id": "MOV_S05_out_of_scope_flight_booking",
+      "phase": "B",
+      "query": "Đặt giúp mình một vé máy bay từ Hà Nội vào Đà Nẵng vào sáng mai.",
+      "failure_type": "out_of_scope",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "metadata": {
+        "skill": "reject_non_movie_booking",
+        "difficulty": "easy",
+        "what_it_tests": "Single-turn: yêu cầu đặt vé máy bay nằm ngoài phạm vi trợ lý vé xem phim; phải từ chối hoặc định hướng lại mà không gọi tool."
+      }
+    },
+    {
+      "id": "MOV_M01_accumulate_showtime_constraints",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Mình muốn xem Avatar: Fire and Ash vào cuối tuần này."
+        },
+        {
+          "role": "user",
+          "content": "Ở Hà Nội, chỉ lấy các suất bắt đầu sau 19:00."
+        },
+        {
+          "role": "user",
+          "content": "Tìm giúp mình các rạp có bản IMAX, vẫn giữ những điều kiện trên."
+        }
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "topic": "general",
+              "timeframe": "week"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_constraint_accumulation",
+        "difficulty": "hard",
+        "what_it_tests": "Multi-turn: tích lũy đúng phim, Hà Nội, cuối tuần, sau 19:00 và IMAX; lượt cuối phải tra cứu với timeframe=week thay vì làm mất điều kiện từ các lượt trước."
+      }
+    },
+    {
+      "id": "MOV_M02_correct_social_review_args",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Trên Twitter, khán giả nhận xét thế nào về Dune: Part Three?"
+        },
+        {
+          "role": "user",
+          "content": "Tập trung vào trải nghiệm IMAX, dùng đúng từ khóa \"Dune: Part Three IMAX\" và lấy 10 bài mới nhất."
+        },
+        {
+          "role": "user",
+          "content": "Đổi thành 6 bài nổi bật nhất nhé; vẫn giữ nguyên phim, chủ đề IMAX và từ khóa trước đó."
+        }
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "Dune: Part Three IMAX",
+              "search_type": "Top",
+              "limit": 6
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_social_search_correction",
+        "difficulty": "hard",
+        "what_it_tests": "Multi-turn: dùng social_search cho review Twitter, giữ đúng query qua các lượt, sửa limit từ 10 thành 6 và đổi search_type từ Latest sang Top theo yêu cầu 'nổi bật nhất' ở lượt cuối."
+      }
+    },
+    {
+      "id": "MOV_M03_explicit_confirmation_gate",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Đặt giúp mình 2 vé Zootopia 2 tại CGV Aeon Tân Phú vào tối mai."
+        },
+        {
+          "role": "user",
+          "content": "Chọn suất 20:15 và ghế F8, F9."
+        },
+        {
+          "role": "user",
+          "content": "Trước khi thanh toán, hãy nhắc lại đơn và hỏi mình xác nhận."
+        }
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_confirmation_before_payment",
+        "difficulty": "hard",
+        "what_it_tests": "Multi-turn: giữ đầy đủ chi tiết đơn và tuân thủ cổng xác nhận; lượt cuối phải hỏi yes/no, không tự coi các lựa chọn trước đó là chấp thuận thanh toán."
+      }
+    },
+    {
+      "id": "MOV_M04_cancel_current_booking_request",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Tra lịch chiếu Inside Out 2 ở quận 1 tối nay giúp mình."
+        },
+        {
+          "role": "user",
+          "content": "Nếu có suất 19:30 thì chọn 2 ghế giữa rạp."
+        },
+        {
+          "role": "user",
+          "content": "Thôi hủy yêu cầu nhé, đừng tra cứu hay đặt gì nữa."
+        }
+      ],
+      "failure_type": "unnecessary_tool",
+      "expect": {
+        "no_tool": true,
+        "behavior": "acknowledge_cancellation"
+      },
+      "metadata": {
+        "skill": "multiturn_latest_turn_cancellation",
+        "difficulty": "medium",
+        "what_it_tests": "Multi-turn: ý định ở lượt cuối hủy toàn bộ yêu cầu trước đó; trợ lý chỉ xác nhận đã dừng và tuyệt đối không gọi tool."
+      }
+    },
+    {
+      "id": "MOV_M05_clarify_language_version",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Mình cần 3 vé Doraemon cho hai người lớn và một bé, xem chiều Chủ nhật."
+        },
+        {
+          "role": "user",
+          "content": "Tại Lotte Cinema West Lake, suất 16:30."
+        },
+        {
+          "role": "user",
+          "content": "Rạp có cả bản lồng tiếng và phụ đề, tiếp tục chọn vé giúp mình."
+        }
+      ],
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "choice"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_clarify_movie_version",
+        "difficulty": "hard",
+        "what_it_tests": "Multi-turn: dù đã có số vé, nhóm khách, ngày, rạp và giờ, phiên bản lồng tiếng/phụ đề vẫn là thuộc tính bắt buộc chưa được chọn; phải hỏi dạng choice thay vì tự đoán."
+      }
+    }
+  ]
 }

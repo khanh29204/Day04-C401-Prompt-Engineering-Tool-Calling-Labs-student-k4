@@ -5,14 +5,25 @@ from typing import Any
 
 import requests
 
-from tools._shared import TIMEOUT, err
+from env_loader import load_dotenv
+from tools._shared import ROOT, TIMEOUT, err
+
+
+def _rapidapi_key() -> str | None:
+    """Read RAPIDAPI_KEY from the process, falling back to starter_v0/.env."""
+    key = os.getenv("RAPIDAPI_KEY")
+    if key:
+        return key
+
+    load_dotenv(ROOT / ".env", override=False)
+    return os.getenv("RAPIDAPI_KEY")
 
 
 def _twitter_get(path: str, params: dict[str, Any]) -> dict[str, Any]:
-    key = os.getenv("RAPIDAPI_KEY")
+    key = _rapidapi_key()
     host = os.getenv("RAPIDAPI_TWITTER_HOST", "twitter-api45.p.rapidapi.com")
     if not key:
-        raise RuntimeError("Missing RAPIDAPI_KEY env var")
+        raise RuntimeError("Missing RAPIDAPI_KEY in environment or starter_v0/.env")
     response = requests.get(
         f"https://{host}{path}",
         params=params,

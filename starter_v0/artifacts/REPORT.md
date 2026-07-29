@@ -6,9 +6,15 @@
 
 ## Team
 
-- Team:
+- Team: B1
 - Members:
-- Provider/model:
+    + Trương Quang Minh - 2A202601212 - PM + UI design
+    + Phạm Ngọc Quốc Khánh - 2A202601254 - Tool Engineer
+    + Vũ Hữu Trường 2A202601694 - Tool Engineer 
+    + Hoàng Trung Hải - 2A202601054 - Evaluation Designer
+    + Hoàng Vũ Trung Nguyên - 2A202601076 - Evaluation Designer 
+    + Phạm Anh Minh - 2A202601260 - Prompt Engineer
+- Provider/model: GPT-4o
 
 ---
 
@@ -16,7 +22,7 @@
 
 ## A1. Agent này làm được gì
 
-> 1–2 câu mô tả agent dùng để làm gì.
+> Cinema agent: tìm thông tin các bộ phim đang chiếu rạp hiện tại theo từ khóa/diễn viên/rạp chiếu, đề xuất và hỗ trợ đặt vé
 
 Ví dụ: "Research agent: tìm tin theo từ khóa / theo tài khoản, đọc URL và tổng hợp thành digest."
 
@@ -33,16 +39,20 @@ Ví dụ: "Research agent: tìm tin theo từ khóa / theo tài khoản, đọc 
 | Tên tool | Làm được gì | Tool mới nhóm thêm? |
 |---|---|---|
 | clarify | hỏi lại người dùng khi thiếu thông tin | không |
-|  |  |  |
-|  |  |  |
+| lookup | tra cứu thông tin Internet | không |
+| social search | tìm trên mạng xã hội | không |
+| cinema search | tra cứu rạp chiếu phim | có |
+| wikipedia search | tra cứu wikipedia | có |
 
 ## A3. Câu hỏi mẫu để thử
 
 > 3–5 câu hỏi/yêu cầu mẫu để team khác tự thử agent ngay.
 
-1.
-2.
-3.
+1. Tôi cần xem phim Spiderman: Brand New Day trong hôm nay.
+2. Tìm lịch chiếu Conan Movie 29 tại CGV Vincom Center Landmark 81 vào tối thứ Bảy tuần này, ưu tiên bản IMAX.
+3. Đặt giúp mình 2 vé xem Conan Movie 29, suất khoảng 20:00 tối nay, nhưng chưa cho biết rạp.
+4. Trên Twitter, khán giả đánh giá thế nào về Dune: Part Three bản IMAX? Hãy lấy 8 bài nổi bật nhất.
+5. Đặt giúp mình một vé máy bay từ Hà Nội vào Đà Nẵng vào sáng mai.
 
 ## A4. Kịch bản demo đã rehearse
 
@@ -50,7 +60,11 @@ Ví dụ: "Research agent: tìm tin theo từ khóa / theo tài khoản, đọc 
 
 | Scenario | Tool trace cần thấy | Câu chuyện cải thiện version | Fallback run/transcript |
 |---|---|---|---|
-|  |  |  |  |
+| 1. Lookup showtime IMAX | `lookup` với `query="Conan Movie 29 CGV Landmark 81 IMAX"`, `topic="general"`, `timeframe="week"` | V0 hay chọn sai `social_search`; bản mới giữ nguyên cụm truy vấn và map đúng "tuần này" thành `timeframe=week`. | Re-run case `MOV_S01_lookup_imax_showtimes` |
+| 2. Thiếu địa điểm thì hỏi lại | `clarify` với `response_type="text"` | Trước đây agent đoán rạp hoặc tra cứu mơ hồ; bản mới dừng đúng chỗ và hỏi thiếu thành phố/rạp trước khi gọi tool khác. | Re-run case `MOV_S02_clarify_missing_location` |
+| 3. Chốt xác nhận trước thanh toán | `clarify` với `response_type="yes_no"` | V0 có xu hướng đi thẳng vào luồng mua vé; bản mới chặn ở cổng ràng buộc và yêu cầu xác nhận trước khi xử lý thanh toán. | Re-run case `MOV_S03_confirm_before_payment` |
+| 4. Review phim trên Twitter | `social_search` với `query="Dune: Part Three IMAX"`, `search_type="Top"`, `limit=8` | Bản cũ hay giữ `Latest` hoặc sai limit; bản mới đổi đúng sang `Top` khi người dùng nói "nổi bật nhất" và giữ đúng 8 bài. | Re-run case `MOV_S04_social_reviews_top_imax` |
+| 5. Yêu cầu ngoài phạm vi | Không gọi tool; trả lời từ chối/định hướng lại | Trước đây agent vẫn cố tra cứu hoặc gọi nhầm tool; bản mới nhận ra đây là vé máy bay nên dừng hẳn, không tiêu tốn tool call. | Re-run case `MOV_S05_out_of_scope_flight_booking` |
 
 ---
 
