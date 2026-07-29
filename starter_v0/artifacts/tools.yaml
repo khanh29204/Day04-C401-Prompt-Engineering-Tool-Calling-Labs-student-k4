@@ -56,6 +56,14 @@ tools:
         url: {type: string, default: "", description: "Địa chỉ"}
       required: [url]
 
+  - name: current_time
+    description: "Lấy thời gian hiện tại từ API theo múi giờ, mặc định là Việt Nam (Asia/Ho_Chi_Minh)."
+    parameters:
+      type: object
+      properties:
+        timezone: {type: string, default: "Asia/Ho_Chi_Minh", description: "Múi giờ (ví dụ: Asia/Ho_Chi_Minh, VN)"}
+      required: []
+
   - name: format
     description: "Trình bày dữ liệu đã có thành văn bản."
     parameters:
