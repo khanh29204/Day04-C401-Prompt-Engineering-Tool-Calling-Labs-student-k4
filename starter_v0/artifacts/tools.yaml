@@ -125,6 +125,84 @@ tools:
         max_chars: {type: integer, default: 8000, description: "Số ký tự"}
       required: [arxiv_url]
 
+  # ---------------- CGV cinema tools (bonus) ----------------
+  # Ported from the cgv-mcp MCP server into tools/cgv/. Names must stay in sync
+  # with TOOL_FUNCTIONS in tools/__init__.py. These declarations are extra tools
+  # the model can see, so they can shift base-eval routing: comment out this
+  # whole block (and the matching block in tools/__init__.py) to get the
+  # original 10-tool surface back.
+  - name: cgv_cinemas
+    description: "Danh sách cụm rạp CGV, có thể lọc theo tỉnh/thành hoặc từ khóa. Trả về cinema_id dùng cho các tool CGV khác."
+    parameters:
+      type: object
+      properties:
+        city: {type: string, default: "", description: "Tên tỉnh/thành, bỏ dấu cũng được (ví dụ: ho chi minh)"}
+        query: {type: string, default: "", description: "Từ khóa trong tên rạp hoặc địa chỉ"}
+        limit: {type: integer, default: 30, description: "Số rạp tối đa"}
+      required: []
+
+  - name: cgv_movies
+    description: "Danh sách phim đang chiếu và sắp chiếu tại CGV. Trả về sku dùng cho cgv_movie_schedules."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa trong tên phim"}
+        category: {type: string, default: "all", description: "Nhóm phim của CGV (Now Showing, Coming Soon) hoặc all"}
+        limit: {type: integer, default: 20, description: "Số phim tối đa"}
+      required: []
+
+  - name: cgv_movie_schedules
+    description: "Suất chiếu của MỘT phim trong MỘT ngày, theo từng rạp. Dùng khi người dùng nói tên phim."
+    parameters:
+      type: object
+      properties:
+        sku: {type: string, default: "", description: "SKU phim, lấy từ cgv_movies (ví dụ: 26016500)"}
+        date: {type: string, default: "", description: "Ngày: today, tomorrow, YYYY-MM-DD, DD/MM/YYYY hoặc DDMMYYYY. Rỗng = hôm nay"}
+        city: {type: string, default: "", description: "Lọc theo tỉnh/thành"}
+        cinema_query: {type: string, default: "", description: "Lọc theo tên rạp"}
+        limit: {type: integer, default: 15, description: "Số rạp tối đa"}
+      required: [sku]
+
+  - name: cgv_cinema_schedules
+    description: "Suất chiếu tại MỘT rạp trong MỘT ngày, theo từng phim. Dùng khi người dùng nói tên rạp."
+    parameters:
+      type: object
+      properties:
+        cinema_id: {type: string, default: "", description: "ID rạp, lấy từ cgv_cinemas (ví dụ: 006, giữ số 0 đầu)"}
+        date: {type: string, default: "", description: "Ngày: today, tomorrow, YYYY-MM-DD, DD/MM/YYYY hoặc DDMMYYYY. Rỗng = hôm nay"}
+        movie_query: {type: string, default: "", description: "Lọc theo tên phim"}
+        limit: {type: integer, default: 20, description: "Số phim tối đa"}
+      required: [cinema_id]
+
+  - name: cgv_seatmap
+    description: "Sơ đồ ghế và giá vé của một suất chiếu. Yêu cầu người dùng đã đăng nhập trên web app."
+    parameters:
+      type: object
+      properties:
+        cinema_id: {type: string, default: "", description: "ID rạp"}
+        session_id: {type: string, default: "", description: "ID suất chiếu, lấy từ tool suất chiếu"}
+        date: {type: string, default: "", description: "Ngày của suất chiếu"}
+        status_filter: {type: string, default: "", description: "Chỉ giữ ghế có status đúng giá trị này; xem status_counts trước rồi mới lọc"}
+        limit: {type: integer, default: 400, description: "Số ghế tối đa"}
+      required: [cinema_id, session_id, date]
+
+  - name: cgv_concession
+    description: "Danh sách combo bắp nước của một suất chiếu. Yêu cầu người dùng đã đăng nhập trên web app."
+    parameters:
+      type: object
+      properties:
+        session_id: {type: string, default: "", description: "ID suất chiếu"}
+        product: {type: string, default: "", description: "movie_id của phim (không phải sku)"}
+        theater_id: {type: string, default: "", description: "ID rạp"}
+        session_date: {type: string, default: "", description: "Ngày của suất chiếu"}
+      required: [session_id, product, theater_id, session_date]
+
+  - name: cgv_profile
+    description: "Thông tin thành viên CGV (hạng thẻ, điểm tích lũy). Yêu cầu người dùng đã đăng nhập trên web app."
+    parameters:
+      type: object
+      properties: {}
+      required: []
   - name: wikipedia
     description: "Tra cứu bài viết trên Wikipedia. Ưu tiên tiếng Việt, nếu không có thì dùng tiếng Anh."
     parameters:
