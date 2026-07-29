@@ -203,3 +203,12 @@ tools:
       type: object
       properties: {}
       required: []
+  - name: wikipedia
+    description: "Tra cứu bài viết trên Wikipedia. Ưu tiên tiếng Việt, nếu không có thì dùng tiếng Anh."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Nội dung tìm kiếm"}
+        language: {type: string, enum: [auto, vi, en], default: "auto", description: "Ngôn ngữ ưu tiên"}
+        max_results: {type: integer, default: 3, description: "Số kết quả"}
+      required: [query]
