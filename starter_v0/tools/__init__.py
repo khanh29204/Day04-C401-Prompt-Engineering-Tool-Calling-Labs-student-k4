@@ -19,6 +19,7 @@ from .send.tool import send_telegram
 from .lookup.tool import web_search
 from .current_time.tool import get_current_time
 from .wikipedia.tool import wikipedia_search
+from .movie_reviews.tool import search_movie_reviews
 
 
 # NOTE (starter_v0): tool names here are intentionally vague. These keys are the
@@ -39,6 +40,7 @@ TOOL_FUNCTIONS = {
     "paper_text": get_arxiv_paper_text,
     "current_time": get_current_time,
     "wikipedia": wikipedia_search,
+    "movie_reviews": search_movie_reviews,
 }
 
 
