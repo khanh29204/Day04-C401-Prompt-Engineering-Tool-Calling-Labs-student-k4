@@ -22,3 +22,6 @@ arxiv_papers/
 Thumbs.db
 .idea/
 .vscode/
+transcripts
+.agents
+skills-lock.json

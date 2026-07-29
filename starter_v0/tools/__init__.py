@@ -17,6 +17,15 @@ from .policy.tool import search_company_policy
 from .social_search.tool import search_tweets
 from .send.tool import send_telegram
 from .lookup.tool import web_search
+
+# CGV cinema tools (ported from the cgv-mcp MCP server; see tools/cgv/README.md).
+from .cgv.cinemas.tool import cgv_cinema_list
+from .cgv.cinema_schedules.tool import cgv_cinema_schedules
+from .cgv.concession.tool import cgv_concession
+from .cgv.movies.tool import cgv_movie_list
+from .cgv.movie_schedules.tool import cgv_movie_schedules
+from .cgv.profile.tool import cgv_profile
+from .cgv.seatmap.tool import cgv_seatmap
 from .current_time.tool import get_current_time
 
 
@@ -37,6 +46,15 @@ TOOL_FUNCTIONS = {
     "papers": arxiv_search,
     "paper_text": get_arxiv_paper_text,
     "current_time": get_current_time,
+    # CGV cinema tools (bonus track). Comment this block out — here and in
+    # artifacts/tools.yaml — if the extra declarations disturb base-eval routing.
+    "cgv_cinemas": cgv_cinema_list,
+    "cgv_movies": cgv_movie_list,
+    "cgv_movie_schedules": cgv_movie_schedules,
+    "cgv_cinema_schedules": cgv_cinema_schedules,
+    "cgv_seatmap": cgv_seatmap,
+    "cgv_concession": cgv_concession,
+    "cgv_profile": cgv_profile,
 }
 
 
@@ -53,4 +71,3 @@ def to_openai_tools(declarations: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "parameters": item.get("parameters", {"type": "object", "properties": {}}),
         },
     } for item in declarations]
-

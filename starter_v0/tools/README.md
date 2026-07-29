@@ -11,6 +11,10 @@ tools/<tool_name>/
 `tools/__init__.py` is the registry. `agent.py`, `chat.py`, and `run_eval.py`
 import `TOOL_FUNCTIONS` from that registry.
 
+A family of related tools may live one level deeper, with shared plumbing in
+`_`-prefixed modules next to them — see `tools/cgv/` (CGV cinema tools ported
+from an MCP server). The leaf folders still follow the contract above.
+
 ## Frontmatter Fields
 
 Every `TOOL.md` uses the same fields:
