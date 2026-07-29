@@ -1,7 +1,259 @@
 {
   "dataset_id": "day04_v2_research_group",
   "dataset_role": "group",
-  "description": "Template để NHÓM tự viết đúng 10 case: 5 single-turn dùng query và 5 multi-turn dùng turns. Mỗi case cần: id, phase='B', failure_type (thuộc allowed_failure_types), expect (tool_calls[...] hoặc no_tool=true), và metadata.what_it_tests. File để trống có chủ đích vì mỗi nhóm phải tự thiết kế các case này.",
+  "description": "Bộ eval do nhóm thiết kế cho domain rạp phim: 5 single-turn và 5 multi-turn, kiểm tra routing, arguments, context carry-over, intent switching và confirmation boundary. cinema_search là contract tạm thời cho tool tra suất chiếu sẽ được thêm sau.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "CINEMA_S01_SHOWTIMES",
+      "phase": "B",
+      "query": "Tìm suất chiếu phim Mưa Đỏ tại TP.HCM ngày 2026-08-01.",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "cinema_search",
+            "args": {
+              "movie": "Mưa Đỏ",
+              "city": "TP.HCM",
+              "date": "2026-08-01"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Kiểm tra agent định tuyến yêu cầu tra suất chiếu có đủ phim, thành phố và ngày sang cinema_search."
+      }
+    },
+    {
+      "id": "CINEMA_S02_MISSING_CITY",
+      "phase": "B",
+      "query": "Tìm suất chiếu phim Mưa Đỏ ngày 2026-08-01.",
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Kiểm tra agent hỏi lại thành phố còn thiếu thay vì tự đoán địa điểm hoặc gọi cinema_search ngay."
+      }
+    },
+    {
+      "id": "CINEMA_S03_MOVIE_NEWS",
+      "phase": "B",
+      "query": "Tìm trên web tin doanh thu phim Mưa Đỏ trong tuần này với truy vấn \"doanh thu phim Mưa Đỏ\".",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "doanh thu phim Mưa Đỏ",
+              "topic": "news",
+              "timeframe": "week"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Kiểm tra agent dùng lookup cho tin tức và doanh thu phim trên web, không nhầm với cinema_search."
+      }
+    },
+    {
+      "id": "CINEMA_S04_SOCIAL_TOP",
+      "phase": "B",
+      "query": "Tìm các bài đăng phổ biến nhất trên X theo đúng từ khóa \"Mưa Đỏ\".",
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "Mưa Đỏ",
+              "search_type": "Top"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Kiểm tra agent dùng social_search và truyền search_type=Top cho yêu cầu bài đăng phổ biến nhất."
+      }
+    },
+    {
+      "id": "CINEMA_S05_OUT_OF_SCOPE_CODE",
+      "phase": "B",
+      "query": "Viết một chương trình Python hoàn chỉnh để quản lý bán vé cho rạp phim.",
+      "failure_type": "out_of_scope",
+      "expect": {
+        "no_tool": true
+      },
+      "metadata": {
+        "what_it_tests": "Kiểm tra agent không gọi research tool hoặc cinema_search cho yêu cầu lập trình ngoài phạm vi."
+      }
+    },
+    {
+      "id": "CINEMA_M01_CARRY_CONTEXT",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Mình muốn xem Dune: Part Two tại Hà Nội ngày 2026-08-02."
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn có muốn ưu tiên một rạp cụ thể không?"
+        },
+        {
+          "role": "user",
+          "content": "Không cần chọn rạp cụ thể, cứ tìm tất cả suất chiếu."
+        }
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "cinema_search",
+            "args": {
+              "movie": "Dune: Part Two",
+              "city": "Hà Nội",
+              "date": "2026-08-02"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Kiểm tra agent giữ tên phim, thành phố và ngày từ lượt trước khi user không chọn rạp cụ thể."
+      }
+    },
+    {
+      "id": "CINEMA_M02_DATE_CORRECTION",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Tìm suất chiếu Inside Out 2 tại Đà Nẵng ngày 2026-08-03."
+        },
+        {
+          "role": "assistant",
+          "content": "Mình sẽ tìm suất chiếu theo các thông tin đó."
+        },
+        {
+          "role": "user",
+          "content": "Đổi thành ngày 2026-08-04, các thông tin khác giữ nguyên."
+        }
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "cinema_search",
+            "args": {
+              "movie": "Inside Out 2",
+              "city": "Đà Nẵng",
+              "date": "2026-08-04"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Kiểm tra ngày mới nhất ghi đè ngày cũ trong khi tên phim và thành phố được giữ từ context."
+      }
+    },
+    {
+      "id": "CINEMA_M03_SWITCH_TO_SOCIAL",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Tìm suất chiếu phim Mưa Đỏ tại TP.HCM ngày 2026-08-01."
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã ghi nhận yêu cầu tìm suất chiếu."
+        },
+        {
+          "role": "user",
+          "content": "Không cần suất chiếu nữa. Tìm các bài đăng mới nhất trên X theo đúng từ khóa \"Mưa Đỏ\"."
+        }
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "Mưa Đỏ",
+              "search_type": "Latest"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Kiểm tra agent chuyển intent từ tra suất chiếu sang tìm bài đăng mới nhất và không tiếp tục gọi cinema_search."
+      }
+    },
+    {
+      "id": "CINEMA_M04_CANCEL_REQUEST",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Tìm suất chiếu phim Dune: Part Two tại Hà Nội ngày 2026-08-02."
+        },
+        {
+          "role": "assistant",
+          "content": "Mình sẽ tìm các suất chiếu phù hợp."
+        },
+        {
+          "role": "user",
+          "content": "Thôi, hủy yêu cầu. Không cần tìm gì nữa."
+        }
+      ],
+      "failure_type": "unnecessary_tool",
+      "expect": {
+        "no_tool": true
+      },
+      "metadata": {
+        "what_it_tests": "Kiểm tra agent không gọi bất kỳ tool nào sau khi user hủy yêu cầu ở lượt cuối."
+      }
+    },
+    {
+      "id": "CINEMA_M05_CONFIRM_BEFORE_SEND",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Tóm tắt giúp mình các suất chiếu phim Mưa Đỏ tối nay."
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã chuẩn bị một bản tóm tắt các suất chiếu phù hợp."
+        },
+        {
+          "role": "user",
+          "content": "Gửi bản tóm tắt suất chiếu đó lên Telegram giúp mình."
+        }
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Kiểm tra agent hỏi xác nhận yes/no trước hành động gửi Telegram có side effect."
+      }
+    }
+  ]
 }
