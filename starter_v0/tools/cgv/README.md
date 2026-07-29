@@ -93,6 +93,24 @@ with session_scope(
 
 Never return a token to the browser or include it in an agent message/history.
 
+## Minimal web backend
+
+`web/cgv_api.py` exposes a small FastAPI backend that implements this boundary:
+`POST /api/cgv/login` authenticates server-side and sets an opaque HttpOnly
+cookie; `GET /api/cgv/profile` and `POST /api/cgv/seatmap` use that cookie to
+install `session_scope()` before calling a tool. It never returns the CGV token.
+
+```bash
+pip install -r requirements.txt
+CGV_WEB_COOKIE_SECURE=false uvicorn web.cgv_api:app --reload
+```
+
+`CGV_WEB_COOKIE_SECURE=false` is only for local HTTP testing. Keep its default
+(`true`) behind HTTPS. If the frontend runs on another origin, explicitly set
+`CGV_WEB_ALLOWED_ORIGINS=https://your-frontend.example`; do not use `*` with
+credentialed cookies. The in-memory store is for local development; production
+must use a shared server-side store such as Redis.
+
 The four public tools (`cgv_cinemas`, `cgv_movies`, `cgv_movie_schedules`,
 `cgv_cinema_schedules`) need no account and no API key.
 
