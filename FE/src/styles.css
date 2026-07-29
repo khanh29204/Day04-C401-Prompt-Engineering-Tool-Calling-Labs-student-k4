@@ -1,0 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Roboto, system-ui, sans-serif; }
+button, input { font: inherit; }
+button:focus-visible, input:focus-visible { outline: 3px solid #6750A4; outline-offset: 2px; }

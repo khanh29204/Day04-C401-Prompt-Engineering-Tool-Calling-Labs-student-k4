@@ -4,6 +4,8 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 .venv/
+node_modules/
+dist/
 
 # Secrets — never commit real keys
 .env
@@ -22,3 +24,6 @@ arxiv_papers/
 Thumbs.db
 .idea/
 .vscode/
+transcripts
+.agents
+skills-lock.json

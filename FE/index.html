@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#6750A4" />
+    <title>CGV Agent Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#6750A4',
+              'on-primary': '#FFFFFF',
+              tertiary: '#7D5260',
+              surface: '#FFFBFE',
+              'on-surface': '#1D1B20',
+              'on-surface-variant': '#49454F',
+              'surface-container': '#F3EDF7',
+              'surface-container-low': '#F7F2FA',
+              'surface-container-high': '#ECE6F0',
+              'outline-variant': '#CAC4D0',
+              md: {
+                primary: '#6750A4', onPrimary: '#FFFFFF', primaryContainer: '#E9DDFF', onPrimaryContainer: '#21005D',
+                secondaryContainer: '#E8DEF8', surface: '#FFFBFE', surfaceContainer: '#F3EDF7', surfaceVariant: '#E7E0EC',
+                outline: '#79747E', error: '#BA1A1A', errorContainer: '#FFDAD6', onSurface: '#1D1B20', onSurfaceVariant: '#49454F'
+              }
+            },
+            boxShadow: { elevation1: '0 1px 2px rgb(0 0 0 / 0.22)', elevation2: '0 2px 6px rgb(0 0 0 / 0.18)' }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body class="bg-md-surface text-md-onSurface">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

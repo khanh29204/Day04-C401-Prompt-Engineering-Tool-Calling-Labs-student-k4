@@ -7,3 +7,8 @@ requests>=2.31.0
 PyYAML>=6.0
 # Optional arXiv PDF extraction (`paper_text`):
 pypdf>=4.0.0
+# CGV cinema tools (`tools/cgv/`) response validation:
+pydantic>=2.0
+# Optional web backend for CGV login and server-side session isolation:
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
