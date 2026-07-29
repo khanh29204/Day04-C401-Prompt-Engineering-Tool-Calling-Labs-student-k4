@@ -9,7 +9,7 @@
 tools:
   # ---------------- Core tools ----------------
   - name: clarify
-    description: "Gửi một câu hỏi cho người dùng."
+    description: "Hỏi lại người dùng khi thiếu thông tin hoặc cần xác nhận yes/no trước bước ràng buộc."
     parameters:
       type: object
       properties:
@@ -92,7 +92,7 @@ tools:
   # whole block (and the matching block in tools/__init__.py) to get the
   # original 10-tool surface back.
   - name: cgv_cinemas
-    description: "Danh sách cụm rạp CGV, có thể lọc theo tỉnh/thành hoặc từ khóa. Trả về cinema_id dùng cho các tool CGV khác."
+    description: "Danh sách cụm rạp CGV, dùng khi người dùng hỏi rạp, khu vực, city hoặc lọc IMAX/4DX/Sweetbox. Trả về cinema_id dùng cho các tool CGV khác."
     parameters:
       type: object
       properties:
@@ -102,7 +102,7 @@ tools:
       required: []
 
   - name: cgv_movies
-    description: "Danh sách phim đang chiếu và sắp chiếu tại CGV. Trả về sku dùng cho cgv_movie_schedules."
+    description: "Danh sách phim đang chiếu và sắp chiếu tại CGV; dùng khi người dùng hỏi catalog phim hoặc muốn tra theo tên phim. Trả về sku dùng cho cgv_movie_schedules."
     parameters:
       type: object
       properties:
@@ -164,7 +164,7 @@ tools:
       properties: {}
       required: []
   - name: wikipedia
-    description: "Tra cứu bài viết trên Wikipedia. Ưu tiên tiếng Việt, nếu không có thì dùng tiếng Anh."
+    description: "Tra cứu bài viết trên Wikipedia. Ưu tiên tiếng Việt, nếu không có thì dùng tiếng Anh; dùng cho ngữ cảnh nền về phim, rạp, hoặc người liên quan."
     parameters:
       type: object
       properties:

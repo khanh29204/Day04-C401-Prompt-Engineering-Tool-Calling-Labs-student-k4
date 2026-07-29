@@ -150,7 +150,7 @@ def write_transcript(path: Path, transcript: dict[str, Any]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Interactive Research Agent chat with transcript logging.")
+    parser = argparse.ArgumentParser(description="Interactive Cinema Agent chat with transcript logging.")
     parser.add_argument("--provider", choices=["openrouter", "openai", "anthropic", "gemini"], required=True)
     parser.add_argument("--model", default=None)
     parser.add_argument("--version", required=True, help="Student-chosen artifact version label, e.g. v0, v1, v2.")
@@ -189,7 +189,7 @@ def main() -> None:
         "turns": [],
     }
 
-    print(f"Research Agent chat. artifact_version={artifact_version.artifact_version}")
+    print(f"Cinema Agent chat. artifact_version={artifact_version.artifact_version}")
     print("Type /exit to stop.")
 
     history: list[dict[str, str]] = []
