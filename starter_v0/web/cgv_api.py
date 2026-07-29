@@ -103,14 +103,19 @@ def _cookie_secure() -> bool:
 store = _SessionStore()
 app = FastAPI(title="CGV backend", docs_url=None, redoc_url=None)
 origins = _configured_origins()
-if origins:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["GET", "POST"],
-        allow_headers=["Content-Type"],
-    )
+_cors_kwargs: dict[str, object] = {
+    "allow_credentials": True,
+    "allow_methods": ["GET", "POST"],
+    "allow_headers": ["Content-Type"],
+}
+if origins and origins != ["*"]:
+    _cors_kwargs["allow_origins"] = origins
+else:
+    # Default (and explicit "*"): reflect any request Origin. A literal
+    # allow_origins=["*"] cannot be combined with allow_credentials in
+    # browsers, so use a match-all regex instead to keep cookies working.
+    _cors_kwargs["allow_origin_regex"] = ".*"
+app.add_middleware(CORSMiddleware, **_cors_kwargs)
 
 
 def _require_web_session(session_id: str | None) -> CgvSession:

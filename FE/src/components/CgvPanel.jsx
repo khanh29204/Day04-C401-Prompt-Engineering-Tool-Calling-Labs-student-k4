@@ -1,4 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const SEAT_STATUS_STYLES = [
+  "bg-emerald-100 text-emerald-700",
+  "bg-sky-100 text-sky-700",
+  "bg-amber-100 text-amber-700",
+  "bg-rose-100 text-rose-700",
+  "bg-slate-200 text-slate-600",
+];
+
+function seatStatusStyle(status, statusOrder) {
+  const index = statusOrder.indexOf(status);
+  return SEAT_STATUS_STYLES[index % SEAT_STATUS_STYLES.length] ?? SEAT_STATUS_STYLES[SEAT_STATUS_STYLES.length - 1];
+}
 
 const EMPTY_AUTH_STATE = {
   authenticated: false,
@@ -71,17 +84,124 @@ function ProfilePreview({ profile }) {
   );
 }
 
+function MoviePreview({ movie }) {
+  if (!movie) return null;
+
+  return (
+    <div className="flex gap-4">
+      {movie.posterUrl ? (
+        <img
+          src={movie.posterUrl}
+          alt={movie.title || "Poster phim"}
+          className="h-32 w-24 shrink-0 rounded-xl object-cover ring-1 ring-slate-200"
+        />
+      ) : (
+        <div className="grid h-32 w-24 shrink-0 place-items-center rounded-xl bg-slate-100 text-center text-xs text-slate-400">
+          Không có ảnh
+        </div>
+      )}
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-700">Phim đang xem</p>
+        <h3 className="mt-1 truncate text-base font-semibold text-slate-900">{movie.title || "Chưa rõ tên phim"}</h3>
+        {movie.rating != null ? <p className="mt-1 text-sm text-slate-500">⭐ {movie.rating}/10</p> : null}
+        {movie.meta ? <p className="mt-1 text-sm leading-5 text-slate-500">{movie.meta}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+function SeatmapPreview({ seatmap, selectedSeats, onToggleSeat }) {
+  if (!seatmap || !Array.isArray(seatmap.rows) || seatmap.rows.length === 0) return null;
+  const statusOrder = Object.keys(seatmap.status_counts || {});
+
+  return (
+    <div className="flex min-h-0 flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-700">Sơ đồ ghế</p>
+          <h3 className="mt-1 text-sm text-slate-500">
+            {[seatmap.cinema_id ? `Rạp ${seatmap.cinema_id}` : null, seatmap.date].filter(Boolean).join(" · ") || "Suất chiếu"}
+          </h3>
+        </div>
+        {selectedSeats.size > 0 ? (
+          <span className="shrink-0 rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">
+            {selectedSeats.size} ghế đang chọn
+          </span>
+        ) : null}
+      </div>
+
+      {statusOrder.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {statusOrder.map((status) => (
+            <span key={status} className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${seatStatusStyle(status, statusOrder)}`}>
+              mã {status} · {seatmap.status_counts[status]}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="max-h-60 min-h-0 overflow-auto rounded-2xl bg-slate-50 p-3">
+        <div className="flex flex-col gap-1.5">
+          {seatmap.rows.map((row) => (
+            <div className="flex items-center gap-1.5" key={row.label}>
+              <span className="w-5 shrink-0 text-xs font-semibold text-slate-400">{row.label}</span>
+              <div className="flex flex-wrap gap-1">
+                {row.seats.map((seat, seatIndex) => {
+                  const seatId = seat.id || `${row.label}-${seat.col ?? seatIndex}`;
+                  const isSelected = selectedSeats.has(seatId);
+                  return (
+                    <button
+                      key={seatId}
+                      type="button"
+                      onClick={() => onToggleSeat(seatId)}
+                      title={`Ghế ${seatId} · mã trạng thái ${seat.status}${seat.price ? ` · ${Number(seat.price).toLocaleString("vi-VN")}đ` : ""}`}
+                      className={`grid h-6 w-6 shrink-0 place-items-center rounded text-[10px] font-medium transition ${
+                        isSelected ? "bg-violet-600 text-white" : seatStatusStyle(String(seat.status), statusOrder)
+                      }`}
+                    >
+                      {seat.col ?? "•"}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <p className="text-[11px] leading-4 text-slate-400">
+        Mã trạng thái ghế do hệ thống CGV trả về. Bấm vào ghế để đánh dấu ghế đang chọn trên giao diện xem trước này.
+      </p>
+    </div>
+  );
+}
+
 export default function CgvPanel({
   authState = EMPTY_AUTH_STATE,
   activity = [],
   profile,
+  movie,
+  seatmap,
   onLogin,
   onLogout,
   onLoadProfile,
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedSeats, setSelectedSeats] = useState(() => new Set());
   const auth = { ...EMPTY_AUTH_STATE, ...authState };
+
+  useEffect(() => {
+    setSelectedSeats(new Set());
+  }, [seatmap?.cinema_id, seatmap?.session_id, seatmap?.date]);
+
+  function toggleSeat(seatId) {
+    setSelectedSeats((current) => {
+      const next = new Set(current);
+      if (next.has(seatId)) next.delete(seatId);
+      else next.add(seatId);
+      return next;
+    });
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -169,7 +289,7 @@ export default function CgvPanel({
         )}
       </section>
 
-      <section className="rounded-[28px] bg-white p-5 shadow-[0_2px_8px_rgba(31,24,54,0.08)] ring-1 ring-slate-200">
+      <section className="flex min-h-0 shrink-0 flex-col gap-4 rounded-[28px] bg-white p-5 shadow-[0_2px_8px_rgba(31,24,54,0.08)] ring-1 ring-slate-200">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">Xem trước</h2>
@@ -186,17 +306,23 @@ export default function CgvPanel({
             </button>
           ) : null}
         </div>
-        <div className="mt-4"><ProfilePreview profile={profile} /></div>
+        <MoviePreview movie={movie} />
+        <SeatmapPreview seatmap={seatmap} selectedSeats={selectedSeats} onToggleSeat={toggleSeat} />
+        {!movie && !seatmap ? <ProfilePreview profile={profile} /> : null}
       </section>
 
-      <section className="min-h-0 flex-1 rounded-[28px] bg-white p-5 shadow-[0_2px_8px_rgba(31,24,54,0.08)] ring-1 ring-slate-200">
-        <h2 className="text-lg font-semibold text-slate-900">Agent đang làm gì?</h2>
-        <p className="mt-0.5 text-sm text-slate-500">Các thao tác CGV gần đây</p>
-        {activity.length > 0 ? (
-          <ol className="mt-3 divide-y divide-slate-100">{activity.map((item, index) => <ActivityItem item={item} index={index} key={item?.id || `${item?.title || item?.tool || "activity"}-${index}`} />)}</ol>
-        ) : (
-          <p className="mt-4 rounded-2xl bg-slate-50 px-4 py-5 text-sm leading-6 text-slate-500">Khi agent tra cứu CGV, hoạt động sẽ xuất hiện tại đây.</p>
-        )}
+      <section className="flex min-h-0 flex-1 flex-col rounded-[28px] bg-white p-5 shadow-[0_2px_8px_rgba(31,24,54,0.08)] ring-1 ring-slate-200">
+        <div className="shrink-0">
+          <h2 className="text-lg font-semibold text-slate-900">Agent đang làm gì?</h2>
+          <p className="mt-0.5 text-sm text-slate-500">Các thao tác CGV gần đây</p>
+        </div>
+        <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
+          {activity.length > 0 ? (
+            <ol className="divide-y divide-slate-100">{activity.map((item, index) => <ActivityItem item={item} index={index} key={item?.id || `${item?.title || item?.tool || "activity"}-${index}`} />)}</ol>
+          ) : (
+            <p className="rounded-2xl bg-slate-50 px-4 py-5 text-sm leading-6 text-slate-500">Khi agent tra cứu CGV, hoạt động sẽ xuất hiện tại đây.</p>
+          )}
+        </div>
       </section>
     </aside>
   );

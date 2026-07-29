@@ -17,4 +17,5 @@ export const api = {
   session: () => request('/api/cgv/session'),
   profile: () => request('/api/cgv/profile'),
   chat: (message, history) => request('/api/chat', { method: 'POST', body: JSON.stringify({ message, history }) }),
+  agentVersion: () => request('/api/agent/version'),
 }

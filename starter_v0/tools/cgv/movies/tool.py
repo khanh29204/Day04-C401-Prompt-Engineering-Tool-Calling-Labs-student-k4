@@ -31,6 +31,7 @@ def cgv_movie_list(query: str = "", category: str = "all", limit: int = 20) -> d
                 "category": movie.category,
                 "rating_code": movie.rating_code,
                 "duration_minutes": movie.movie_endtime,
+                "thumbnail": movie.thumbnail,
                 "release_date": movie.release_date,
                 "showing_date": movie.showing_date,
                 "is_booking": movie.is_booking,

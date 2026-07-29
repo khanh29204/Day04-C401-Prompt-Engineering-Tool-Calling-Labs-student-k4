@@ -36,6 +36,7 @@ def cgv_cinema_schedules(
                     "name": movie.name,
                     "rating_code": movie.rating_code,
                     "duration_minutes": movie.movie_endtime,
+                    "thumbnail": movie.thumbnail,
                     "formats": compact_formats(movie.languages),
                 })
 

@@ -8,6 +8,7 @@ import requests
 from tools._shared import TIMEOUT, err
 
 API_BASE = "https://api.themoviedb.org/3"
+POSTER_BASE = "https://image.tmdb.org/t/p/w342"
 
 
 def _tmdb_get(path: str, params: dict[str, Any]) -> dict[str, Any]:
@@ -67,6 +68,7 @@ def search_movie_reviews(query: str = "", year: int = 0, max_results: int = 5) -
                 "vote_count": movie.get("vote_count"),
                 "overview": movie.get("overview"),
                 "tmdb_id": movie_id,
+                "poster_url": f"{POSTER_BASE}{movie['poster_path']}" if movie.get("poster_path") else None,
             },
             "items": [_review_item(item) for item in raw_items[:max_results]],
         }

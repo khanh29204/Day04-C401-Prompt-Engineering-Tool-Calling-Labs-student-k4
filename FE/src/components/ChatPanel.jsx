@@ -5,6 +5,62 @@ function getMessageText(message) {
   return message?.content ?? message?.text ?? message?.message ?? "";
 }
 
+const SAFE_URL_PREFIXES = ["http://", "https://", "mailto:"];
+const INLINE_MARKDOWN = /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|`([^`]+)`|\*([^*]+)\*|_([^_]+)_/g;
+
+function isSafeUrl(url) {
+  const lower = url.toLowerCase();
+  return SAFE_URL_PREFIXES.some((prefix) => lower.startsWith(prefix));
+}
+
+function renderInlineMarkdown(line, keyPrefix) {
+  const nodes = [];
+  let lastIndex = 0;
+  let match;
+  let index = 0;
+  INLINE_MARKDOWN.lastIndex = 0;
+
+  while ((match = INLINE_MARKDOWN.exec(line)) !== null) {
+    if (match.index > lastIndex) nodes.push(line.slice(lastIndex, match.index));
+    const key = `${keyPrefix}-${index++}`;
+
+    if (match[1] !== undefined) {
+      nodes.push(
+        isSafeUrl(match[2]) ? (
+          <a key={key} href={match[2]} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-80">
+            {match[1]}
+          </a>
+        ) : match[1]
+      );
+    } else if (match[3] !== undefined) {
+      nodes.push(<strong key={key}>{match[3]}</strong>);
+    } else if (match[4] !== undefined) {
+      nodes.push(<code key={key} className="rounded bg-black/10 px-1 py-0.5 text-[0.85em]">{match[4]}</code>);
+    } else if (match[5] !== undefined) {
+      nodes.push(<em key={key}>{match[5]}</em>);
+    } else {
+      nodes.push(<em key={key}>{match[6]}</em>);
+    }
+    lastIndex = INLINE_MARKDOWN.lastIndex;
+  }
+  if (lastIndex < line.length) nodes.push(line.slice(lastIndex));
+  return nodes;
+}
+
+function MarkdownText({ text }) {
+  const lines = text.split("\n");
+  return (
+    <p className="whitespace-pre-wrap break-words">
+      {lines.map((line, index) => (
+        <span key={index}>
+          {renderInlineMarkdown(line, `l${index}`)}
+          {index < lines.length - 1 ? <br /> : null}
+        </span>
+      ))}
+    </p>
+  );
+}
+
 function ToolActivity({ calls }) {
   if (!Array.isArray(calls) || calls.length === 0) return null;
 
@@ -48,7 +104,7 @@ function ChatMessage({ message }) {
             : "rounded-bl-md bg-surface-container text-on-surface"
         }`}
       >
-        {text ? <p className="whitespace-pre-wrap break-words">{text}</p> : null}
+        {text ? <MarkdownText text={text} /> : null}
         <ToolActivity calls={message?.toolCalls} />
       </div>
     </article>
