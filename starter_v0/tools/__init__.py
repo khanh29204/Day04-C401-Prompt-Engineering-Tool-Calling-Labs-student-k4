@@ -28,6 +28,7 @@ from .cgv.profile.tool import cgv_profile
 from .cgv.seatmap.tool import cgv_seatmap
 from .current_time.tool import get_current_time
 from .wikipedia.tool import wikipedia_search
+from .movie_reviews.tool import search_movie_reviews
 
 
 # NOTE (starter_v0): tool names here are intentionally vague. These keys are the
@@ -57,6 +58,7 @@ TOOL_FUNCTIONS = {
     "cgv_concession": cgv_concession,
     "cgv_profile": cgv_profile,
     "wikipedia": wikipedia_search,
+    "movie_reviews": search_movie_reviews,
 }
 
 
