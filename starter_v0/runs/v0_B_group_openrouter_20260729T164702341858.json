@@ -1,0 +1,957 @@
+{
+  "run_id": "v0_B_group_openrouter_20260729T164702341858",
+  "version": "v0",
+  "artifact_version": "v0+pf5cbdbea6082+td4423af152b1",
+  "prompt_hash": "f5cbdbea60827caf3da51dde4720831a24bc0960566b62613fc82344d3893e64",
+  "tools_hash": "d4423af152b11f13bfd55071693d479624e04ef245b98dd4df810009058bc43a",
+  "phase": "B",
+  "suite": "group",
+  "provider": "openrouter",
+  "model": "openai/gpt-4o-mini",
+  "system_prompt": "D:\\VIN\\Lab\\Lab04\\Day04-C401-Prompt-Engineering-Tool-Calling-Labs-student-k4\\starter_v0\\artifacts\\system_prompt.md",
+  "tools": "D:\\VIN\\Lab\\Lab04\\Day04-C401-Prompt-Engineering-Tool-Calling-Labs-student-k4\\starter_v0\\artifacts\\tools.yaml",
+  "eval_cases": "data\\eval_group.json",
+  "dataset_id": "day04_v2_movie_ticket_group",
+  "dataset_role": "group",
+  "description": "Bộ 10 eval case cho trợ lý đặt vé xem phim, gồm đúng 5 single-turn và 5 multi-turn. Bộ case bao phủ lookup, social_search, clarify với các response_type text/choice/yes_no, hành vi không gọi tool, và đầy đủ 6 failure_type được cho phép.",
+  "generated_at": "2026-07-29T16:47:02",
+  "summary": {
+    "total_cases": 10,
+    "measured_cases": 10,
+    "provider_error_cases": 0,
+    "passed_cases": 5,
+    "case_accuracy": 0.5,
+    "tool_routing_accuracy": 0.5,
+    "argument_accuracy": 0.5,
+    "multiturn_accuracy": 0.6,
+    "failure_counts": {
+      "wrong_tool": 1,
+      "missing_info": 2,
+      "wrong_boundary": 1,
+      "wrong_arg_value": 1
+    },
+    "observed_mismatch_counts": {
+      "missing_tool_call": 5
+    }
+  },
+  "results": [
+    {
+      "id": "MOV_S01_lookup_imax_showtimes",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "showtime_lookup_with_format_and_time",
+        "difficulty": "medium",
+        "what_it_tests": "Single-turn: yêu cầu đã có phim, rạp, khung giờ và định dạng thì phải dùng lookup thay vì social_search; đồng thời giữ nguyên cụm truy vấn và ánh xạ 'tuần này' thành timeframe=week."
+      },
+      "input": "Tìm lịch chiếu Conan Movie 29 tại CGV Vincom Center Landmark 81 vào tối thứ Bảy tuần này, ưu tiên bản IMAX. Hãy tra cứu bằng đúng cụm từ \"Conan Movie 29 CGV Landmark 81 IMAX\".",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "Conan Movie 29 CGV Landmark 81 IMAX",
+              "topic": "general",
+              "timeframe": "week"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "cgv_movies",
+            "args": {
+              "query": "Conan Movie 29 CGV Landmark 81 IMAX"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "wrong_tool",
+        "failures": [
+          "missing tool call lookup",
+          "extra tool call cgv_movies"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "cgv_movies",
+          "args": {
+            "query": "Conan Movie 29 CGV Landmark 81 IMAX"
+          },
+          "result": {
+            "tool": "cgv_movies",
+            "query": "Conan Movie 29 CGV Landmark 81 IMAX",
+            "category": "all",
+            "total_matches": 0,
+            "items": [],
+            "truncated": false,
+            "categories": [
+              "Now Showing",
+              "Coming Soon"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MOV_S02_clarify_missing_location",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "clarify_missing_cinema_or_city",
+        "difficulty": "medium",
+        "what_it_tests": "Single-turn: đã có phim, số vé và giờ nhưng thiếu thành phố/rạp; trợ lý phải hỏi lại địa điểm thay vì tự chọn rạp hoặc tra cứu mơ hồ."
+      },
+      "input": "Đặt giúp mình 2 vé xem Conan Movie 29, suất khoảng 20:00 tối nay.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "cgv_movies",
+            "args": {
+              "query": "Conan Movie 29"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "missing_info",
+        "failures": [
+          "missing tool call clarify",
+          "extra tool call cgv_movies"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "cgv_movies",
+          "args": {
+            "query": "Conan Movie 29"
+          },
+          "result": {
+            "tool": "cgv_movies",
+            "query": "Conan Movie 29",
+            "category": "all",
+            "total_matches": 0,
+            "items": [],
+            "truncated": false,
+            "categories": [
+              "Now Showing",
+              "Coming Soon"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MOV_S03_confirm_before_payment",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "confirm_order_before_irreversible_payment",
+        "difficulty": "hard",
+        "what_it_tests": "Single-turn: đơn đã đủ phim, rạp, suất, ghế và phương thức thanh toán nhưng trợ lý vẫn phải tóm tắt và xin xác nhận yes/no ngay trước bước mua vé có tính ràng buộc."
+      },
+      "input": "Mình muốn mua 2 vé Zootopia 2 tại CGV Aeon Tân Phú, suất 20:15 tối mai, ghế F8 và F9, thanh toán bằng thẻ đã lưu.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "cgv_movies",
+            "args": {
+              "query": "Zootopia 2"
+            }
+          },
+          {
+            "name": "cgv_cinemas",
+            "args": {
+              "query": "Aeon Tân Phú"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "wrong_boundary",
+        "failures": [
+          "missing tool call clarify",
+          "extra tool call cgv_movies",
+          "extra tool call cgv_cinemas"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "cgv_movies",
+          "args": {
+            "query": "Zootopia 2"
+          },
+          "result": {
+            "tool": "cgv_movies",
+            "query": "Zootopia 2",
+            "category": "all",
+            "total_matches": 0,
+            "items": [],
+            "truncated": false,
+            "categories": [
+              "Now Showing",
+              "Coming Soon"
+            ]
+          }
+        },
+        {
+          "tool": "cgv_cinemas",
+          "args": {
+            "query": "Aeon Tân Phú"
+          },
+          "result": {
+            "tool": "cgv_cinemas",
+            "city": "",
+            "query": "Aeon Tân Phú",
+            "total_matches": 1,
+            "items": [
+              {
+                "cinema_id": "012",
+                "name": "CGV Aeon Tân Phú",
+                "city": "Hồ Chí Minh",
+                "address": "Lầu 3, Aeon Mall 30 Bờ Bao Tân Thắng, P. Sơn Kỳ Quận Tân Phú TP. Hồ Chí Minh",
+                "specials": [
+                  "Sweetbox"
+                ]
+              }
+            ],
+            "truncated": false,
+            "cities": [
+              "Hồ Chí Minh",
+              "Hà Nội",
+              "Đà Nẵng",
+              "Hải Phòng",
+              "Quảng Ninh",
+              "Bà Rịa-Vũng Tàu",
+              "Cần Thơ",
+              "Đắk Lắk",
+              "Bình Dương",
+              "Đồng Nai",
+              "Bình Định",
+              "Yên Bái",
+              "Trà Vinh",
+              "Vĩnh Long",
+              "Kiên Giang",
+              "Hậu Giang",
+              "Hà Tĩnh",
+              "Phú Yên",
+              "Khánh Hòa",
+              "Thái Nguyên",
+              "Sơn La",
+              "Tây Ninh",
+              "Lạng Sơn",
+              "Tiền Giang",
+              "Phú Thọ",
+              "Quảng Ngãi",
+              "Nghệ An",
+              "Đồng Tháp",
+              "Hưng Yên",
+              "Kon Tum",
+              "Sóc Trăng",
+              "Bạc Liêu"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MOV_S04_social_reviews_top_imax",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "twitter_movie_review_search",
+        "difficulty": "hard",
+        "what_it_tests": "Single-turn: yêu cầu review phim theo chủ đề trên Twitter phải dùng social_search thay vì timeline hoặc lookup; đồng thời trích đúng từ khóa, ánh xạ 'nổi bật nhất' thành search_type=Top và giữ limit=8."
+      },
+      "input": "Trên Twitter, khán giả đánh giá thế nào về trải nghiệm xem Dune: Part Three bản IMAX? Hãy tìm đúng từ khóa \"Dune: Part Three IMAX\", lấy 8 bài nổi bật nhất và ưu tiên review của người xem thay vì bài quảng bá.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "Dune: Part Three IMAX",
+              "search_type": "Top",
+              "limit": 8
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "Dune: Part Three IMAX",
+              "search_type": "Top",
+              "limit": 8
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "social_search",
+          "args": {
+            "query": "Dune: Part Three IMAX",
+            "search_type": "Top",
+            "limit": 8
+          },
+          "result": {
+            "tool": "search_tweets",
+            "query": "Dune: Part Three IMAX",
+            "search_type": "Top",
+            "items": [
+              {
+                "title": "Experience the epic conclusion. Dune: Part Three only in theaters and IMAX December 18. #DuneMovie #FilmedforIMAX https:",
+                "summary": "Experience the epic conclusion. Dune: Part Three only in theaters and IMAX December 18. #DuneMovie #FilmedforIMAX https://t.co/6lYDvlvMqW",
+                "url": "https://x.com/dunemovie/status/2033941127368478781",
+                "source": "@dunemovie",
+                "date": "Tue Mar 17 16:18:48 +0000 2026",
+                "metrics": {
+                  "favorites": 89298,
+                  "retweets": 25982,
+                  "views": "12816321"
+                }
+              },
+              {
+                "title": "Get IMAX 70mm tickets now for Dune: Part Three and get a limited-edition collectible filmstrip—while supplies last.  Dun",
+                "summary": "Get IMAX 70mm tickets now for Dune: Part Three and get a limited-edition collectible filmstrip—while supplies last.  Dune: Part Three only in theaters and IMAX December 18. #DuneMovie #FilmedforIMAX https://t.co/CHGlfdc1Ai\n\nValid for one (1) collectible filmstrip per ticket purchase only for 7pm \"Dune: Part Three” IMAX 70MM showtimes on opening weekend (12/17/2026 – 12/ 20/2026) at participating locations (“Qualifying Showtimes”). First come, first served only while supplies last. Void where prohibited. Offer valid from 4/6/26 at 9am PT until all tickets for the Qualifying Showtimes are sold. Collectible film strip will only be available for pick up in person in theatre at your ticketed Qualifying Showtime.",
+                "url": "https://x.com/dunemovie/status/2041184214389764168",
+                "source": "@dunemovie",
+                "date": "Mon Apr 06 16:00:14 +0000 2026",
+                "metrics": {
+                  "favorites": 8401,
+                  "retweets": 1542,
+                  "views": "1843965"
+                }
+              },
+              {
+                "title": "Get IMAX 70mm tickets now for Dune: Part Three and get a limited-edition collectible filmstrip—while supplies last. Dune",
+                "summary": "Get IMAX 70mm tickets now for Dune: Part Three and get a limited-edition collectible filmstrip—while supplies last. Dune: Part Three is showing in IMAX at Regal December 18. \n\n🎟️: https://t.co/UPfiGnkHHB\n\nValid for one (1) Collectible Film Strip per ticket purchase for qualifying IMAX 70MM showtimes (7pm on opening weekend - Dec 17 - Dec 20) at participating locations. First come, first served only while supplies last. Film Strip pick up will be at the participating theater where your ticket is purchased for. #DuneMovie #FilmedforIMAX",
+                "url": "https://x.com/RegalMovies/status/2041197436497015121",
+                "source": "@RegalMovies",
+                "date": "Mon Apr 06 16:52:47 +0000 2026",
+                "metrics": {
+                  "favorites": 134,
+                  "retweets": 7,
+                  "views": "13251"
+                }
+              },
+              {
+                "title": "“Forgive me for all I’ve done.” Experience the epic conclusion. Dune: Part Three only in theaters and IMAX December 18. ",
+                "summary": "“Forgive me for all I’ve done.” Experience the epic conclusion. Dune: Part Three only in theaters and IMAX December 18. #DuneMovie  #FilmedforIMAX https://t.co/x9Nftg9yXd",
+                "url": "https://x.com/dunemovie/status/2074915319253242203",
+                "source": "@dunemovie",
+                "date": "Wed Jul 08 17:55:36 +0000 2026",
+                "metrics": {
+                  "favorites": 35363,
+                  "retweets": 9934,
+                  "views": "12779174"
+                }
+              },
+              {
+                "title": "WE ALSO JUST WITNESSED THE IMAX 70MM DUNE PART THREE PROLOGUE THAT WILL PLAY BEFORE THE ODYSSEY https://t.co/r4HHxlLIAI",
+                "summary": "WE ALSO JUST WITNESSED THE IMAX 70MM DUNE PART THREE PROLOGUE THAT WILL PLAY BEFORE THE ODYSSEY https://t.co/r4HHxlLIAI",
+                "url": "https://x.com/harvv/status/2074916699757838392",
+                "source": "@harvv",
+                "date": "Wed Jul 08 18:01:05 +0000 2026",
+                "metrics": {
+                  "favorites": 313,
+                  "retweets": 11,
+                  "views": "10910"
+                }
+              },
+              {
+                "title": "what Dune: Part Three opening night in IMAX 70mm is going to feel like",
+                "summary": "what Dune: Part Three opening night in IMAX 70mm is going to feel like",
+                "url": "https://x.com/trygraptor/status/2082185217763397807",
+                "source": "@trygraptor",
+                "date": "Tue Jul 28 19:23:35 +0000 2026",
+                "metrics": {
+                  "favorites": 12761,
+                  "retweets": 369,
+                  "views": "261765"
+                }
+              },
+              {
+                "title": "The cast and crew talk Dune: Part Three. Watch the full livestream and trailer now. #DuneMovie",
+                "summary": "The cast and crew talk Dune: Part Three. Watch the full livestream and trailer now. #DuneMovie\n\nDune: Part Three only in theaters and IMAX December 18. https://t.co/qaozZJyUF0",
+                "url": "https://x.com/dunemovie/status/2033988775857238342",
+                "source": "@dunemovie",
+                "date": "Tue Mar 17 19:28:08 +0000 2026",
+                "metrics": {
+                  "favorites": 5466,
+                  "retweets": 773,
+                  "views": "137002"
+                }
+              },
+              {
+                "title": "Nolan took his cast out onto the open ocean and burned through two million feet of film, close to 380 miles of it, acros",
+                "summary": "Nolan took his cast out onto the open ocean and burned through two million feet of film, close to 380 miles of it, across 91 shooting days. The version where your chair fights back was mapped out afterward, by effects editors who normally get about two weeks per movie.\n\nA 4DX chair moves three ways: it tips forward and back, swings side to side, and drops and lifts. That is all it can do. Everything else is vibration plus 21 environmental effects, including wind, water, fog, strobes, scent, and a jab to the shoulders that CJ 4DPlex staff have called the back kicker.\n\nYour inner ear tracks how much you are really moving. Your eyes read the screen. When a ship pitches through a storm shot on IMAX film and your seat answers with a few inches of tilt, those two reports disagree, and the disagreement is the thing that turns your stomach. Researchers named it sensory conflict back in 1975. Three hours of small physical lies about a very large ocean.\n\n4DX publishes its own list of people who should stay out of the chair: pregnant, elderly, prone to motion sickness, or living with high blood pressure, heart conditions, allergies, neck or back trouble, or epilepsy. The company warns its equipment can cause loss of balance, headaches, dizziness, and in rare cases epilepsy-like symptoms. Each seat is rated to hold 230 pounds. The tweet was a joke, but the list of people who should avoid the chair is the company's own.\n\nRoughly 790 4DX rooms operate across about 70 countries. Only about 40 screens on earth can show The Odyssey the way it was shot, on IMAX 70mm film. One 4DX seat at Regal L.A. Live went for $36, and the equipment does not always work. A viewer asked for a refund after getting seat movement and nothing else, no wind and no water. Premium screens of every kind still took 52% of the film's $123.5 million opening weekend.\n\nAdrian Ford, a Reddit reviewer who sits through nearly every 4DX release, bought tickets to both formats on opening weekend and checked the seating charts first. The IMAX house was sold out; the 4DX room had fewer than 20 people in it. Then videos like this one started circulating, and the comments underneath filled up with people asking which theater to book.",
+                "url": "https://x.com/anishmoonka/status/2082156632579121434",
+                "source": "@anishmoonka",
+                "date": "Tue Jul 28 17:30:00 +0000 2026",
+                "metrics": {
+                  "favorites": 227,
+                  "retweets": 10,
+                  "views": "109307"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MOV_S05_out_of_scope_flight_booking",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "reject_non_movie_booking",
+        "difficulty": "easy",
+        "what_it_tests": "Single-turn: yêu cầu đặt vé máy bay nằm ngoài phạm vi trợ lý vé xem phim; phải từ chối hoặc định hướng lại mà không gọi tool."
+      },
+      "input": "Đặt giúp mình một vé máy bay từ Hà Nội vào Đà Nẵng vào sáng mai.",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [],
+        "actual_text": "Xin lỗi, nhưng tôi không thể giúp bạn đặt vé máy bay. Tuy nhiên, tôi có thể hỗ trợ bạn với thông tin về phim ảnh, lịch chiếu hoặc đặt vé xem phim tại CGV. Nếu bạn cần thông tin nào khác, hãy cho tôi biết!",
+        "case_failure_type": "out_of_scope",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": []
+    },
+    {
+      "id": "MOV_M01_accumulate_showtime_constraints",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_constraint_accumulation",
+        "difficulty": "hard",
+        "what_it_tests": "Multi-turn: tích lũy đúng phim, Hà Nội, cuối tuần, sau 19:00 và IMAX; lượt cuối phải tra cứu với timeframe=week thay vì làm mất điều kiện từ các lượt trước."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Mình muốn xem Avatar: Fire and Ash vào cuối tuần này."
+        },
+        {
+          "role": "user",
+          "content": "Ở Hà Nội, chỉ lấy các suất bắt đầu sau 19:00."
+        },
+        {
+          "role": "user",
+          "content": "Tìm giúp mình các rạp có bản IMAX, vẫn giữ những điều kiện trên."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "topic": "general",
+              "timeframe": "week"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "cgv_movies",
+            "args": {
+              "query": "Avatar: Fire and Ash"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "wrong_arg_value",
+        "failures": [
+          "missing tool call lookup",
+          "extra tool call cgv_movies"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "cgv_movies",
+          "args": {
+            "query": "Avatar: Fire and Ash"
+          },
+          "result": {
+            "tool": "cgv_movies",
+            "query": "Avatar: Fire and Ash",
+            "category": "all",
+            "total_matches": 0,
+            "items": [],
+            "truncated": false,
+            "categories": [
+              "Now Showing",
+              "Coming Soon"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MOV_M02_correct_social_review_args",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_social_search_correction",
+        "difficulty": "hard",
+        "what_it_tests": "Multi-turn: dùng social_search cho review Twitter, giữ đúng query qua các lượt, sửa limit từ 10 thành 6 và đổi search_type từ Latest sang Top theo yêu cầu 'nổi bật nhất' ở lượt cuối."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Trên Twitter, khán giả nhận xét thế nào về Dune: Part Three?"
+        },
+        {
+          "role": "user",
+          "content": "Tập trung vào trải nghiệm IMAX, dùng đúng từ khóa \"Dune: Part Three IMAX\" và lấy 10 bài mới nhất."
+        },
+        {
+          "role": "user",
+          "content": "Đổi thành 6 bài nổi bật nhất nhé; vẫn giữ nguyên phim, chủ đề IMAX và từ khóa trước đó."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "Dune: Part Three IMAX",
+              "search_type": "Top",
+              "limit": 6
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "Dune: Part Three IMAX",
+              "search_type": "Top",
+              "limit": 6
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "social_search",
+          "args": {
+            "query": "Dune: Part Three IMAX",
+            "search_type": "Top",
+            "limit": 6
+          },
+          "result": {
+            "tool": "search_tweets",
+            "query": "Dune: Part Three IMAX",
+            "search_type": "Top",
+            "items": [
+              {
+                "title": "Experience the epic conclusion. Dune: Part Three only in theaters and IMAX December 18. #DuneMovie #FilmedforIMAX https:",
+                "summary": "Experience the epic conclusion. Dune: Part Three only in theaters and IMAX December 18. #DuneMovie #FilmedforIMAX https://t.co/6lYDvlvMqW",
+                "url": "https://x.com/dunemovie/status/2033941127368478781",
+                "source": "@dunemovie",
+                "date": "Tue Mar 17 16:18:48 +0000 2026",
+                "metrics": {
+                  "favorites": 89298,
+                  "retweets": 25982,
+                  "views": "12816327"
+                }
+              },
+              {
+                "title": "Dune: Part Three hits theaters and IMAX on December 18! The holy war spreads across the universe, and the golden path is",
+                "summary": "Dune: Part Three hits theaters and IMAX on December 18! The holy war spreads across the universe, and the golden path is revealed. 🌌⏳\n\nGet ready for epic sandstorms, massive sandworms, and total cinematic brilliance. 🏜️🪱🎬\n#Dune3 #DunePartThree #IMAX\n#DuneMovie #Dune #DuneMessiah #DenisVilleneuve #IMAX",
+                "url": "https://x.com/PaulFirstOfHis/status/2082218639294624071",
+                "source": "@PaulFirstOfHis",
+                "date": "Tue Jul 28 21:36:24 +0000 2026",
+                "metrics": {
+                  "favorites": 6,
+                  "retweets": 1,
+                  "views": "210"
+                }
+              },
+              {
+                "title": "Get IMAX 70mm tickets now for Dune: Part Three and get a limited-edition collectible filmstrip—while supplies last. Dune",
+                "summary": "Get IMAX 70mm tickets now for Dune: Part Three and get a limited-edition collectible filmstrip—while supplies last. Dune: Part Three is showing in IMAX at Regal December 18. \n\n🎟️: https://t.co/UPfiGnkHHB\n\nValid for one (1) Collectible Film Strip per ticket purchase for qualifying IMAX 70MM showtimes (7pm on opening weekend - Dec 17 - Dec 20) at participating locations. First come, first served only while supplies last. Film Strip pick up will be at the participating theater where your ticket is purchased for. #DuneMovie #FilmedforIMAX",
+                "url": "https://x.com/RegalMovies/status/2041197436497015121",
+                "source": "@RegalMovies",
+                "date": "Mon Apr 06 16:52:47 +0000 2026",
+                "metrics": {
+                  "favorites": 134,
+                  "retweets": 7,
+                  "views": "13251"
+                }
+              },
+              {
+                "title": "“Forgive me for all I’ve done.” Experience the epic conclusion. Dune: Part Three only in theaters and IMAX December 18. ",
+                "summary": "“Forgive me for all I’ve done.” Experience the epic conclusion. Dune: Part Three only in theaters and IMAX December 18. #DuneMovie  #FilmedforIMAX https://t.co/x9Nftg9yXd",
+                "url": "https://x.com/dunemovie/status/2074915319253242203",
+                "source": "@dunemovie",
+                "date": "Wed Jul 08 17:55:36 +0000 2026",
+                "metrics": {
+                  "favorites": 35363,
+                  "retweets": 9934,
+                  "views": "12779174"
+                }
+              },
+              {
+                "title": "Get IMAX 70mm tickets now for Dune: Part Three and get a limited-edition collectible filmstrip—while supplies last.  Dun",
+                "summary": "Get IMAX 70mm tickets now for Dune: Part Three and get a limited-edition collectible filmstrip—while supplies last.  Dune: Part Three only in theaters and IMAX December 18. #DuneMovie #FilmedforIMAX https://t.co/CHGlfdc1Ai\n\nValid for one (1) collectible filmstrip per ticket purchase only for 7pm \"Dune: Part Three” IMAX 70MM showtimes on opening weekend (12/17/2026 – 12/ 20/2026) at participating locations (“Qualifying Showtimes”). First come, first served only while supplies last. Void where prohibited. Offer valid from 4/6/26 at 9am PT until all tickets for the Qualifying Showtimes are sold. Collectible film strip will only be available for pick up in person in theatre at your ticketed Qualifying Showtime.",
+                "url": "https://x.com/dunemovie/status/2041184214389764168",
+                "source": "@dunemovie",
+                "date": "Mon Apr 06 16:00:14 +0000 2026",
+                "metrics": {
+                  "favorites": 8401,
+                  "retweets": 1542,
+                  "views": "1843965"
+                }
+              },
+              {
+                "title": "All paths have led to this moment. Experience the epic conclusion. Dune: Part Three only in theaters and IMAX December 1",
+                "summary": "All paths have led to this moment. Experience the epic conclusion. Dune: Part Three only in theaters and IMAX December 18. #DuneMovie  #FilmedforIMAX https://t.co/mMfrpY6vrt",
+                "url": "https://x.com/dunemovie/status/2074871209502851549",
+                "source": "@dunemovie",
+                "date": "Wed Jul 08 15:00:20 +0000 2026",
+                "metrics": {
+                  "favorites": 32606,
+                  "retweets": 6372,
+                  "views": "1397859"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MOV_M03_explicit_confirmation_gate",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_confirmation_before_payment",
+        "difficulty": "hard",
+        "what_it_tests": "Multi-turn: giữ đầy đủ chi tiết đơn và tuân thủ cổng xác nhận; lượt cuối phải hỏi yes/no, không tự coi các lựa chọn trước đó là chấp thuận thanh toán."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Đặt giúp mình 2 vé Zootopia 2 tại CGV Aeon Tân Phú vào tối mai."
+        },
+        {
+          "role": "user",
+          "content": "Chọn suất 20:15 và ghế F8, F9."
+        },
+        {
+          "role": "user",
+          "content": "Trước khi thanh toán, hãy nhắc lại đơn và hỏi mình xác nhận."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn đã đặt 2 vé cho bộ phim \"Zootopia 2\" tại CGV Aeon Tân Phú vào tối mai, suất chiếu lúc 20:15, với ghế F8 và F9. Bạn có xác nhận đặt vé này không?",
+              "response_type": "yes_no"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn đã đặt 2 vé cho bộ phim \"Zootopia 2\" tại CGV Aeon Tân Phú vào tối mai, suất chiếu lúc 20:15, với ghế F8 và F9. Bạn có xác nhận đặt vé này không?",
+            "response_type": "yes_no"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn đã đặt 2 vé cho bộ phim \"Zootopia 2\" tại CGV Aeon Tân Phú vào tối mai, suất chiếu lúc 20:15, với ghế F8 và F9. Bạn có xác nhận đặt vé này không?",
+            "response_type": "yes_no",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "MOV_M04_cancel_current_booking_request",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_latest_turn_cancellation",
+        "difficulty": "medium",
+        "what_it_tests": "Multi-turn: ý định ở lượt cuối hủy toàn bộ yêu cầu trước đó; trợ lý chỉ xác nhận đã dừng và tuyệt đối không gọi tool."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tra lịch chiếu Inside Out 2 ở quận 1 tối nay giúp mình."
+        },
+        {
+          "role": "user",
+          "content": "Nếu có suất 19:30 thì chọn 2 ghế giữa rạp."
+        },
+        {
+          "role": "user",
+          "content": "Thôi hủy yêu cầu nhé, đừng tra cứu hay đặt gì nữa."
+        }
+      ],
+      "expect": {
+        "no_tool": true,
+        "behavior": "acknowledge_cancellation"
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [],
+        "actual_text": "Yêu cầu của bạn đã được hủy. Nếu bạn cần bất kỳ thông tin nào khác, hãy cho tôi biết!",
+        "case_failure_type": "unnecessary_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": []
+    },
+    {
+      "id": "MOV_M05_clarify_language_version",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_clarify_movie_version",
+        "difficulty": "hard",
+        "what_it_tests": "Multi-turn: dù đã có số vé, nhóm khách, ngày, rạp và giờ, phiên bản lồng tiếng/phụ đề vẫn là thuộc tính bắt buộc chưa được chọn; phải hỏi dạng choice thay vì tự đoán."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Mình cần 3 vé Doraemon cho hai người lớn và một bé, xem chiều Chủ nhật."
+        },
+        {
+          "role": "user",
+          "content": "Tại Lotte Cinema West Lake, suất 16:30."
+        },
+        {
+          "role": "user",
+          "content": "Rạp có cả bản lồng tiếng và phụ đề, tiếp tục chọn vé giúp mình."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "choice"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "cgv_cinemas",
+            "args": {
+              "city": "ha noi",
+              "query": "Lotte Cinema West Lake"
+            }
+          },
+          {
+            "name": "cgv_movies",
+            "args": {
+              "query": "Doraemon"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "missing_info",
+        "failures": [
+          "missing tool call clarify",
+          "extra tool call cgv_cinemas",
+          "extra tool call cgv_movies"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "cgv_cinemas",
+          "args": {
+            "city": "ha noi",
+            "query": "Lotte Cinema West Lake"
+          },
+          "result": {
+            "tool": "cgv_cinemas",
+            "city": "ha noi",
+            "query": "Lotte Cinema West Lake",
+            "total_matches": 0,
+            "items": [],
+            "truncated": false,
+            "cities": [
+              "Hồ Chí Minh",
+              "Hà Nội",
+              "Đà Nẵng",
+              "Hải Phòng",
+              "Quảng Ninh",
+              "Bà Rịa-Vũng Tàu",
+              "Cần Thơ",
+              "Đắk Lắk",
+              "Bình Dương",
+              "Đồng Nai",
+              "Bình Định",
+              "Yên Bái",
+              "Trà Vinh",
+              "Vĩnh Long",
+              "Kiên Giang",
+              "Hậu Giang",
+              "Hà Tĩnh",
+              "Phú Yên",
+              "Khánh Hòa",
+              "Thái Nguyên",
+              "Sơn La",
+              "Tây Ninh",
+              "Lạng Sơn",
+              "Tiền Giang",
+              "Phú Thọ",
+              "Quảng Ngãi",
+              "Nghệ An",
+              "Đồng Tháp",
+              "Hưng Yên",
+              "Kon Tum",
+              "Sóc Trăng",
+              "Bạc Liêu"
+            ]
+          }
+        },
+        {
+          "tool": "cgv_movies",
+          "args": {
+            "query": "Doraemon"
+          },
+          "result": {
+            "tool": "cgv_movies",
+            "query": "Doraemon",
+            "category": "all",
+            "total_matches": 0,
+            "items": [],
+            "truncated": false,
+            "categories": [
+              "Now Showing",
+              "Coming Soon"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
